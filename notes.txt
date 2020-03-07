@@ -11,7 +11,7 @@ Modern movies where background stays the same?
 Modern movies where background is moving a LOT. like a mountain and driving.
 
 
-
+- I know the algo has quite a few assumptions that are pretty specific. So yea
 
 
 
@@ -19,3 +19,6 @@ See how this changes when in different color spaces???
 
 See how this could change when in Lab, CIE, something else?
 
+- There is an existing paper that does this, on RGB and HSV.
+
+https://www.semanticscholar.org/paper/Performance-comparison-of-the-Teknomo-Fernandez-on-Abu-Fernandez/c45c7e300e2bbc800f269ddfe22596a8fe7b301f
