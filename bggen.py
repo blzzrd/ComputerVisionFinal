@@ -50,7 +50,7 @@ def getImageMode(img1, img2, img3):
             p2 = img1[y][x]
 """
 
-def backgroundGeneration(seq, L)
+def backgroundGeneration(seq, L):
     """
     seq - sequence of images. (list of cv2.imread)
     L = Level 
@@ -83,9 +83,12 @@ if __name__ == "__main__":
     path = sys.argv[1]
     resultPath = sys.argv[2]
 
-    # Iterate through path
-        # If there are any images, cv2.imread
-        # Add them to the list of images.
+    image_sequence = []
+    for image in path:
+        if os.path.isfile(image):
+            img = cv2.imread(os.path.join(path, image))
+            if img:
+                image_sequence.append(img)
 
     result_img = backgroundGeneration(seq, L)
     cv2.imwrite(filename=resultPath, img=result_img)
