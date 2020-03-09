@@ -1,80 +1,71 @@
 import numpy as np
+import sys
 import os
 import cv2
 
 
-"""
-one of the traditional methods to gen a bg image is to calculate intensity of
-each pixel over several slices.
-Given n images, calculate mode of all. 
-Time consuming. Requires large space. 
-
-
-Boolean operation to determine mode
-
-b(r,c,t) = bg pixl at (r,c) @ t
-nb(r,c) = # of bg pixels at (r,c) for T
-
-g(r,c,t) = foreground (r,c) @ t
-ng(r,c,) = # of fg pixels @ (r,c)
-
-nb(r,c) + ng(r,c) = T
-
-For any pixel nb(r,c) > T/2
-
-
-
-proposition 1
-
-B = x3 AND (x1 ^ x2) OR x1 and x2
-
-
-
+""" 
+TEKNOMO-FERNANDEZ ALGORITHM FOR BACKGROUND GENERATION 
+ADAPTED BY ALEJANDRO CASTANEDA AND RENEE WU
+CREATED FOR COMPUTER VISION 410, FENG LIU
 """
 
+def get_mode(img1, img2, img3):
+    """
+    get_mode
+    Boolean Operation to Determine the Mode.
+    Compares three images and gets the binary value for the value that occurs
+    most frequently in the images.
 
-def getMode(img1, img2, img3):
-    # Per Paper:
-    # b = (g3 and (g1 xor g2)) or (g1 and g2)
+    ARGS --
+    img1, img2, img3 - A series of input images (created by cv2.imread)
+
+    RETURNS --
+    b - The resultant numpy array of the values through the boolean equation.
+
+    Returns the background 
+    """
+
+    # Per Paper: b = (g3 and (g1 xor g2)) or (g1 and g2)
     b = (img3 & (img1^img2)) | (img1 & img2)
     return b
 
 
-"""
-in case numpy doesn't support big boolean
-def getImageMode(img1, img2, img3):
-    h, w, _ = img1.shape
-    for y in range(h):
-        for x in range(w):
-            p1 = img1[y][x]
-            p2 = img1[y][x]
-"""
-
-def backgroundGeneration(seq, L):
+def background_generation(seq, L):
     """
-    seq - sequence of images. (list of cv2.imread)
-    L = Level 
-    """
+    background_generation
+    
+    Generates the background by iterating through a sequence of frames
+    a certain amount of time. 
 
+    ARGS --
+    seq - The sequence of image frames (list of images read by cv2.imread)
+    L - The amount of times the procedure is repeated until the level L.
+
+    RETURNS --
+    Returns an np array ready for cv2 to imwrite.
+    """
     result = []
 
     if L <= 0:
         print("Error, level must be a positive, nonzero number.")
-        return 
+        return None
 
     for i in range(3**(L-1) -1):
-        s = np.random.choice(len(seq), 3)
-        result[i] = getMode(seq[s[0]], seq[s[1]], seq[s[2]])
+        s = np.random.choice(len(seq), 3, replace=False)
+        result.append(get_mode(seq[s[0]], seq[s[1]], seq[s[2]]))
 
+
+    print(len(result))
     for i in range(2, L):
-        for j in range(3**(L-1) -1):
+        for j in range(3**(L-i)-1):
+            print(j, 3*j, 3*j+1, 3*j+2)
             img1 = result[3*j]
             img2 = result[3*j+1]
             img3 = result[3*j+2]
-            result[j] = getMode(img1, img2, img3)
+            result[j] = get_mode(img1, img2, img3)
 
     return result[0]
-
 
 
 if __name__ == "__main__":
@@ -84,14 +75,15 @@ if __name__ == "__main__":
     resultPath = sys.argv[2]
 
     image_sequence = []
-    for image in path:
-        if os.path.isfile(image):
-            img = cv2.imread(os.path.join(path, image))
-            if img:
+    for image in os.listdir(path):
+        image_path = os.path.join(path, image)
+        if os.path.isfile(image_path):
+            img = cv2.imread(image_path)
+            if img is not None:
                 image_sequence.append(img)
 
-    result_img = backgroundGeneration(seq, L)
-    cv2.imwrite(filename=resultPath, img=result_img)
+    result_img = background_generation(image_sequence, L=6)
 
-
+    if result_img is not None:
+        cv2.imwrite(filename=resultPath, img=result_img)
 
