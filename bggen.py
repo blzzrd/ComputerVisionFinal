@@ -59,7 +59,6 @@ def tf_background_generation(seq, L):
 
     for i in range(2, L):
         for j in range(3**(L-i)-1):
-            print(j, 3*j, 3*j+1, 3*j+2)
             img1 = result[3*j]
             img2 = result[3*j+1]
             img3 = result[3*j+2]
@@ -72,15 +71,17 @@ def mc_get_mode(frames):
     w, h, p = frames[0].shape
     f = np.zeros((frames[0].shape))
 
-    for y in range(h):
-        for x in range(w):
+    for y in range(w):
+        for x in range(h):
             for c in range(p):
+                #print(y, x, c)
                 bit = 1
                 f[y][x][c] = 0
                 while bit < 0b11111111:
                     diff = 0
                     for frame in frames:
                         pix = frame[y][x][c]
+                        #print(pix)
                         if pix^bit > 0:
                             diff += 1
                         else:
@@ -153,7 +154,8 @@ if __name__ == "__main__":
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
     mcrgb_result = mc_background_generation(image_sequence, S=9 ,L=2)
-    if tfrgb_result is not None:
+    print(mcrgb_result)
+    if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
 
