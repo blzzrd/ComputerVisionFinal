@@ -69,25 +69,26 @@ def tf_background_generation(seq, L):
 
 
 def mc_get_mode(frames):
-    w, h, _ = frames[0].shape
+    w, h, p = frames[0].shape
     f = np.zeros((frames[0].shape))
 
-    for i in range(h):
-        for j in range(w):
-            bit = 1
-            f[y][x] = 0
-            while bit < 0b11111111:
-                diff = 0
-                for frame in frames:
-                    pix = frame[y][x]
-                    if pix^bit > 0:
-                        diff += 1
-                    else:
-                        diff -= 1
-                if diff > 0:
-                    f[y][x] += bit
-                bit <<= 1
-    
+    for y in range(h):
+        for x in range(w):
+            for c in range(p):
+                bit = 1
+                f[y][x][c] = 0
+                while bit < 0b11111111:
+                    diff = 0
+                    for frame in frames:
+                        pix = frame[y][x][c]
+                        if pix^bit > 0:
+                            diff += 1
+                        else:
+                            diff -= 1
+                    if diff > 0:
+                        f[y][x][c] += bit
+                    bit <<= 1
+        
     return f
 
 def mc_background_generation(seq, S, L):
@@ -130,41 +131,13 @@ def mc_background_generation(seq, S, L):
     return arrF[0]
 
 
-def rgb_to_hsv(frame):
-    norm = frame / 255
-    r,g,b = frame[:,:,0], frame[:,:,1], frame[:,:,2]
-
-    mx = max(r, g, b)
-    mn = min(r, g, b)
-    diff = mx - mn
-
-    if diff == 0:
-        h = 0
-    elif mx in r:
-        h = (60 * ((g - b) / diff) + 360) % 360
-    elif mx in g:
-        h = (60 * ((g - b) / diff) + 120) % 360
-    elif mx in b:
-        h = (60 * ((g - b) / diff) + 240) % 360
-    
-    if mx == 0:
-        s = 0
-    else:
-        s = diff / mx * 100
-
-    v = mx * 100
-    
-
-
-
-
 
 
 if __name__ == "__main__":
     """ python3 bggen.py sample/ bgimg1.png """
 
     path = sys.argv[1]
-    resultPathString = path + '.png'
+    result_path = path + '.png'
 
     image_sequence = []
     for image in os.listdir(path):
@@ -177,13 +150,11 @@ if __name__ == "__main__":
     tfrgb_result = tf_background_generation(image_sequence, L=6)
 
     if tfrgb_result is not None:
-        cv2.imwrite(filename='tfrgb'+resultPath, img=result_img)
+        cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
-
-    tfrgb_result = tf_background_generation(image_sequence, L=6)
-
+    mcrgb_result = mc_background_generation(image_sequence, S=9 ,L=2)
     if tfrgb_result is not None:
-        cv2.imwrite(filename='tfrgb'+resultPath, img=result_img)
+        cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
 
 
