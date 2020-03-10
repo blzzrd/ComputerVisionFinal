@@ -144,14 +144,28 @@ if __name__ == "__main__":
             img = cv2.imread(image_path)
             if img is not None:
                 image_sequence.append(img)
-
     tfrgb_result = tf_background_generation(image_sequence, L=6)
     if tfrgb_result is not None:
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
-    mcrgb_result = mc_background_generation(image_sequence, S=6, L=3)
+    mcrgb_result = mc_background_generation(image_sequence, S=6, L=6)
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
+    """
+    ## HSV TIME
+    hsv_seq = [] 
+    for image in image_sequence:
+        hsv_seq.append(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
 
+    tfhsv_result = tf_background_generation(hsv_seq, L=6)
+    if tfhsv_result is not None:
+        tfhsvrgb_result = cv2.cvtColor(tfhsv_result, cv2.COLOR_HSV2BGR)
+        cv2.imwrite(filename='tfhsv'+result_path, img=tfhsvrgb_result)
+
+    mchsv_result = mc_background_generation(hsv_seq, S=3, L=3)
+    if mchsv_result is not None:
+        mchsvrgb_result = cv2.cvtColor(mchsv_result.astype('float32'), cv2.COLOR_HSV2BGR)
+        cv2.imwrite(filename='mchsv'+result_path, img=mchsvrgb_result)
+    """
 
