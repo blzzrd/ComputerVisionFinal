@@ -75,18 +75,21 @@ def mc_get_mode(frames):
     for y in range(w):
         for x in range(h):
             for c in range(p):
-                bit = 1
-                while bit < 0b11111111:
+                #bit = 1
+                n = 0
+                while n < 8: # bit < 0b11111111:
                     diff = 0
                     for frame in frames:
                         pix = frame[y][x][c]
-                        if np.logical_xor(pix,bit) > 0:
+                        if pix & (1<<n): #np.bitwise_xor(pix,bit) > 0:
                             diff += 1
                         else:
                             diff -= 1
                     if diff > 0:
-                        f[y][x][c] += bit
-                    bit <<= 1
+                        f[y][x][c] += (1<<n)#bit
+                    n += 1
+                    #bit <<= 1
+                    
     return f
 
 def mc_background_generation(seq, S, L):
@@ -146,7 +149,7 @@ if __name__ == "__main__":
     if tfrgb_result is not None:
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
-    mcrgb_result = mc_background_generation(image_sequence, S=3 ,L=1)
+    mcrgb_result = mc_background_generation(image_sequence, S=6, L=3)
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
