@@ -2,6 +2,7 @@ import numpy as np
 import sys
 import os
 import cv2
+import pdb
 
 
 """ 
@@ -74,22 +75,18 @@ def mc_get_mode(frames):
     for y in range(w):
         for x in range(h):
             for c in range(p):
-                #print(y, x, c)
                 bit = 1
-                f[y][x][c] = 0
                 while bit < 0b11111111:
                     diff = 0
                     for frame in frames:
                         pix = frame[y][x][c]
-                        #print(pix)
-                        if pix^bit > 0:
+                        if np.logical_xor(pix,bit) > 0:
                             diff += 1
                         else:
                             diff -= 1
                     if diff > 0:
                         f[y][x][c] += bit
                     bit <<= 1
-        
     return f
 
 def mc_background_generation(seq, S, L):
@@ -114,31 +111,28 @@ def mc_background_generation(seq, S, L):
         print("Error, level must be a positive, nonzero number.")
         return None
 
-    S = len(seq)
+    N = len(seq)
     arrF = []
 
-    for i in range(S**L - 1):
-        r = np.random.randint(S-1)
+    for i in range(S**L):
+        r = np.random.randint(N-1)
         arrF.append(seq[r])
 
-
-    for i in range(L-1):
+    for l in range(L):
         b = 0
-        for j in range(S - 1):
-            f = mc_get_mode(seq)
+        for i in range(S):
+            f = mc_get_mode(seq[b:b+S])
             b += S
-        arrF[i] = f
+            arrF[i] = f
 
     return arrF[0]
-
-
 
 
 if __name__ == "__main__":
     """ python3 bggen.py sample/ bgimg1.png """
 
     path = sys.argv[1]
-    result_path = path + '.png'
+    result_path = sys.argv[2]
 
     image_sequence = []
     for image in os.listdir(path):
@@ -149,12 +143,10 @@ if __name__ == "__main__":
                 image_sequence.append(img)
 
     tfrgb_result = tf_background_generation(image_sequence, L=6)
-
     if tfrgb_result is not None:
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
-    mcrgb_result = mc_background_generation(image_sequence, S=9 ,L=2)
-    print(mcrgb_result)
+    mcrgb_result = mc_background_generation(image_sequence, S=3 ,L=1)
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
