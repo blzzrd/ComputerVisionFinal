@@ -148,7 +148,7 @@ if __name__ == "__main__":
     if tfrgb_result is not None:
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
 
-    mcrgb_result = mc_background_generation(image_sequence, S=6, L=6)
+    mcrgb_result = mc_background_generation(image_sequence, S=9, L=6)
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
