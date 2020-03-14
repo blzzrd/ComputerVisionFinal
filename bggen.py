@@ -130,6 +130,43 @@ def mc_background_generation(seq, S, L):
 
     return arrF[0]
 
+import numpy as np
+
+def median_filter(seq,n):
+    '''
+    Median filter method for background subtraction.
+    
+    ARGS:
+        seq - The sequence of image frames
+        n - a parameter for the number of frames
+    
+    RETURNS:
+        An numpy array that outputs the image of the background
+    '''
+    
+    if n <= 0:
+        print('Error, level must be a positive, nonzero number')
+        return None
+    
+    s = np.random.choice(len(seq), n, replace=True)
+    
+    img = []
+    
+        
+    h,w,_ = seq[0].shape
+    
+    result = np.zeros([h,w])
+    
+    for y in range(h):
+        for x in range(w):
+            img = []
+            for i in range(n):
+                img.append(seq[s[i]][y][x])
+            result[y][x] = np.median(img,axis = 0)
+    
+    return(result)
+            
+
 
 if __name__ == "__main__":
     """ python3 bggen.py sample/ bgimg1.png """
@@ -152,6 +189,9 @@ if __name__ == "__main__":
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
 
+    median_result = median_filter(image_sequence,n = 10)
+    if median_result is not None:
+        cv2.imwrite(filename='median'+result_path, img=median_result)
     """
     ## HSV TIME
     hsv_seq = [] 
