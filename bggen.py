@@ -2,8 +2,7 @@ import numpy as np
 import sys
 import os
 import cv2
-import pdb
-
+import time
 
 """ 
 TEKNOMO-FERNANDEZ ALGORITHM FOR BACKGROUND GENERATION 
@@ -69,15 +68,28 @@ def tf_background_generation(seq, L):
 
 
 def mc_get_mode(frames):
+    """
+    mc_get_mode
+
+    Monte Carlo's version of Get Mode, which will get the modal bit.
+    The idea behind this is to utilize bit shifting to find which
+    bits will occur most frequently in the sequence of images provided.
+    * Spatial temporality is terrible with this, can be optimized.
+
+    ARGS --
+    frames - The frames of the images that are being put in.
+
+    RETURNS --
+    Returns the 'mode' for the bits of the frames provided.
+    """
     w, h, p = frames[0].shape
     f = np.zeros((frames[0].shape))
 
     for y in range(w):
         for x in range(h):
             for c in range(p):
-                #bit = 1
                 n = 0
-                while n < 8: # bit < 0b11111111:
+                while n < 8: 
                     diff = 0
                     for frame in frames:
                         pix = frame[y][x][c]
@@ -88,8 +100,6 @@ def mc_get_mode(frames):
                     if diff > 0:
                         f[y][x][c] += (1<<n)#bit
                     n += 1
-                    #bit <<= 1
-                    
     return f
 
 def mc_background_generation(seq, S, L):
@@ -130,18 +140,19 @@ def mc_background_generation(seq, S, L):
 
     return arrF[0]
 
-import numpy as np
-
 def median_filter(seq,n):
     '''
-    Median filter method for background subtraction.
+    median_filter
+
+    Median filter method for background subtraction. Stores all elements of an
+    array, then will return the median of each pixel.
     
     ARGS:
-        seq - The sequence of image frames
-        n - a parameter for the number of frames
+    seq - The sequence of image frames
+    n - a parameter for the number of frames
     
     RETURNS:
-        An numpy array that outputs the image of the background
+    An numpy array that outputs the image of the background
     '''
     
     if n <= 0:
@@ -151,25 +162,17 @@ def median_filter(seq,n):
     s = np.random.choice(len(seq), n, replace=True)
     
     img = []
-    
-        
-    h,w,_ = seq[0].shape
-    
-    result = np.zeros([h,w])
-    
-    for y in range(h):
-        for x in range(w):
-            img = []
-            for i in range(n):
-                img.append(seq[s[i]][y][x])
-            result[y][x] = np.median(img,axis = 0)
-    
-    return(result)
-            
+
+    for i in range(n):
+        img.append(seq[s[i]])
+    result = np.median(img, axis=0)
+
+    return result
+
 
 
 if __name__ == "__main__":
-    """ python3 bggen.py sample/ bgimg1.png """
+    """ python3 bggen.py sample/ sampleimg.jpg """
 
     path = sys.argv[1]
     result_path = sys.argv[2]
@@ -181,19 +184,30 @@ if __name__ == "__main__":
             img = cv2.imread(image_path)
             if img is not None:
                 image_sequence.append(img)
+
+    start = time.time()
     tfrgb_result = tf_background_generation(image_sequence, L=6)
     if tfrgb_result is not None:
         cv2.imwrite(filename='tfrgb'+result_path, img=tfrgb_result)
+    end = time.time()
+    print("Teknomo Fernandez ran in ", end-start, " seconds.")
 
-    mcrgb_result = mc_background_generation(image_sequence, S=9, L=2)
+    start = time.time()
+    mcrgb_result = mc_background_generation(image_sequence, S=3, L=2)
     if mcrgb_result is not None:
         cv2.imwrite(filename='mcrgb'+result_path, img=mcrgb_result)
-
+    end = time.time()
+    print("Monte Carlo ran in ", end-start, " seconds.")
+    
+    start = time.time()
     median_result = median_filter(image_sequence,n = 10)
     if median_result is not None:
         cv2.imwrite(filename='median'+result_path, img=median_result)
+    end = time.time()
+    print("Median Filter ran in ", end-start, " seconds.")
+
     """
-    ## HSV TIME
+    CODE USED FOR HSV -- FOUND INEFFECTIVE, THEREFORE REMOVED.
     hsv_seq = [] 
     for image in image_sequence:
         hsv_seq.append(cv2.cvtColor(image, cv2.COLOR_BGR2HSV))
